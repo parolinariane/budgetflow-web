@@ -1,9 +1,5 @@
 <template>
   <div class="dashboard-container">
-    <header class="dashboard-header">
-      <img src="../assets/logo.png" alt="Logo BudgetFlow" class="logo" />
-      <h1>BudgetFlow</h1>
-    </header>
 
     <!-- Row de cards resumo -->
     <div class="cards-row">
@@ -13,20 +9,27 @@
     </div>
 
     <!-- Seção de contas -->
-    <!-- Título + filtro -->
     <div class="section-header">
-    <h3>Minhas despesas</h3>
+      <h3>Minhas despesas</h3>
 
-    <div class="filter">
+      <div class="filter">
         <input
-        type="month"
-        v-model="selectedMonth"
-        @change="fetchByMonth"
+          type="month"
+          v-model="selectedMonth"
+          @change="fetchByMonth"
         />
-        <button @click="fetchAll" class="btn-primary">
-        Todas
+
+        <button
+          class="btn-secondary"
+          @click="$router.push('/limite')"
+        >
+          Definir Limite
         </button>
-    </div>
+
+        <button @click="fetchAll" class="btn-primary">
+          Todas
+        </button>
+      </div>
     </div>
 
     <!-- Lista de despesas -->
@@ -112,6 +115,20 @@ export default {
   margin: 0;
 }
 
+.btn-secondary {
+  background-color: white;
+  color: #27AE60;
+  border: 1px solid #27AE60;
+  padding: 0.5rem 1rem;
+  border-radius: 6px;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-secondary:hover {
+  background-color: #E8F8F1;
+}
+
 .filter {
   display: flex;
   gap: 0.5rem;
@@ -129,25 +146,6 @@ export default {
   color: #2C3E50;
   background-color: #F7F9F9;
   padding: 1rem;
-}
-
-.dashboard-header {
-  display: flex;
-  align-items: center;
-  gap: 1rem;
-  margin-bottom: 2rem;
-}
-
-.dashboard-header h1 {
-  color: #27AE60;
-  font-size: 2.5rem;
-  margin: 0;
-}
-
-.logo {
-  height: 50px;
-  width: 50px;
-  object-fit: contain;
 }
 
 .cards-row {

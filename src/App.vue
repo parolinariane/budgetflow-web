@@ -1,7 +1,14 @@
 <template>
-  <router-view></router-view>
+  <div>
+    <AppHeader />
+    <router-view />
+  </div>
 </template>
 
-<script setup></script>
+<script>
+import AppHeader from "./components/AppHeader.vue";
 
-<style scoped></style>
+export default {
+  components: { AppHeader }
+};
+</script>
