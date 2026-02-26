@@ -1,8 +1,4 @@
-import axios from "axios";
-
-const api = axios.create({
-  baseURL: "http://localhost:5175/api", // <--- coloque a porta correta da sua API
-});
+import api from "./api";
 
 const expenseService = {
   getAll() {
@@ -11,10 +7,6 @@ const expenseService = {
 
   getByMonth(mes, ano) {
     return api.get(`/expenses/por-mes?mes=${mes}&ano=${ano}`);
-  },
-
-  getMonthlyTotal(mes, ano) {
-    return api.get(`/expenses/total-mensal?mes=${mes}&ano=${ano}`);
   },
 
   create(data) {
