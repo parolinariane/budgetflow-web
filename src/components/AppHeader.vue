@@ -1,30 +1,17 @@
 <template>
   <header class="app-header">
     <div class="header-content">
-      <div class="brand" @click="$router.push('/')">
-        <div class="logo-wrapper">
-          <img src="../assets/logo.png" alt="Logo BudgetFlow" />
-        </div>
-        <div class="brand-text">
-          <span class="app-name">BudgetFlow</span>
-          <span class="tagline">Controle financeiro inteligente</span>
-        </div>
+      <div class="brand">
+        <img src="../assets/logo.png" alt="Logo BudgetFlow" class="logo" />
+        <h1>BudgetFlow</h1>
       </div>
 
       <nav class="nav-actions">
-        <button
-          class="nav-btn"
-          :class="{ active: $route.path === '/' }"
-          @click="$router.push('/')"
-        >
+        <button class="nav-btn" @click="$router.push('/')">
           Dashboard
         </button>
 
-        <button
-          class="nav-btn"
-          :class="{ active: $route.path === '/limite' }"
-          @click="$router.push('/limite')"
-        >
+        <button class="nav-btn" @click="$router.push('/limite')">
           Limite Mensal
         </button>
       </nav>
@@ -40,18 +27,9 @@ export default {
 
 <style scoped>
 .app-header {
-  position: sticky;
-  top: 0;
-  z-index: 1000;
-
-  backdrop-filter: blur(12px);
-  background: linear-gradient(
-    90deg,
-    rgba(39, 174, 96, 0.08),
-    rgba(255, 255, 255, 0.95)
-  );
-
-  border-bottom: 1px solid rgba(0, 0, 0, 0.05);
+  width: 100%;
+  background: white;
+  border-bottom: 1px solid #E5E7EB;
   padding: 1rem 2rem;
 }
 
@@ -63,50 +41,23 @@ export default {
   align-items: center;
 }
 
-/* BRAND */
-
 .brand {
   display: flex;
   align-items: center;
-  gap: 1rem;
-  cursor: pointer;
+  gap: 0.8rem;
 }
 
-.logo-wrapper {
-  height: 45px;
-  width: 45px;
-  background: linear-gradient(135deg, #27AE60, #2ECC71);
-  border-radius: 12px;
-  display: flex;
-  align-items: center;
-  justify-content: center;
-  box-shadow: 0 6px 15px rgba(39, 174, 96, 0.3);
+.brand h1 {
+  color: #27AE60;
+  font-size: 1.8rem;
+  margin: 0;
 }
 
-.logo-wrapper img {
-  height: 28px;
-  width: 28px;
+.logo {
+  height: 40px;
+  width: 40px;
   object-fit: contain;
-  filter: brightness(0) invert(1);
 }
-
-.brand-text {
-  display: flex;
-  flex-direction: column;
-}
-
-.app-name {
-  font-size: 1.6rem;
-  font-weight: 700;
-  color: #1f2937;
-}
-
-.tagline {
-  font-size: 0.75rem;
-  color: #6b7280;
-}
-
-/* NAV */
 
 .nav-actions {
   display: flex;
@@ -114,24 +65,15 @@ export default {
 }
 
 .nav-btn {
-  padding: 0.5rem 1rem;
-  border-radius: 8px;
+  background: none;
   border: none;
-  background: transparent;
+  color: #2C3E50;
   font-weight: 500;
-  color: #374151;
   cursor: pointer;
-  transition: all 0.2s ease;
+  transition: 0.2s;
 }
 
 .nav-btn:hover {
-  background-color: rgba(39, 174, 96, 0.1);
   color: #27AE60;
-}
-
-.nav-btn.active {
-  background-color: #27AE60;
-  color: white;
-  box-shadow: 0 4px 10px rgba(39, 174, 96, 0.3);
 }
 </style>

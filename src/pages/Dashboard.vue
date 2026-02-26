@@ -3,9 +3,47 @@
 
     <!-- Row de cards resumo -->
     <div class="cards-row">
-      <CardSummary title="Receita Mensal" :amount="monthlyIncome" type="income" />
-      <CardSummary title="Despesa Mensal" :amount="monthlyExpense" type="expense" />
-      <CardSummary title="Saldo Geral" :amount="monthlyIncome - monthlyExpense" />
+      <CardSummary 
+        title="Total Gasto no Mês" 
+        :amount="monthlyExpense" 
+        type="expense" 
+      />
+
+      <CardSummary 
+        title="Limite Mensal" 
+        :amount="monthlyLimit" 
+        type="limit" 
+      />
+
+      <CardSummary 
+        title="Restante do Limite" 
+        :amount="remainingLimit"
+        :type="remainingLimit >= 0 ? 'income' : 'expense'"
+      />
+    </div>
+    <div class="limit-widget">
+      <div class="limit-header">
+        <div>
+          <h4>Uso do Orçamento</h4>
+          <p>
+            {{ usedPercentage.toFixed(0) }}% utilizado
+          </p>
+        </div>
+
+        <div class="percentage-circle"
+            :class="progressStatus">
+          {{ usedPercentage.toFixed(0) }}%
+        </div>
+      </div>
+
+      <div class="progress-bar-modern">
+        <div
+          class="progress-fill-modern"
+          :class="progressStatus"
+          :style="{ width: usedPercentage + '%' }"
+        ></div>
+      </div>
+
     </div>
 
     <!-- Seção de contas -->
@@ -42,7 +80,10 @@
     </div>
 
     <!-- Botão flutuante -->
-    <FloatingButton @click="openAddExpense" />
+    <FloatingButton 
+      :disabled="isLimitExceeded"
+      @click="openAddExpense" 
+    />
   </div>
 </template>
 
@@ -66,10 +107,35 @@ export default {
         { id: 4, name: "Conta Nubank", description: "Conta conectada", balance: 4345.17, color: "#8E44AD", initials: "N" },
       ],
       selectedMonth: null,
-      monthlyIncome: 20000, // exemplo estático
-      monthlyExpense: 12802.36, // exemplo estático
+      monthlyExpense: 0,
+      monthlyLimit: 15000,
     };
   },
+
+  computed: {
+    remainingLimit() {
+      return this.monthlyLimit - this.monthlyExpense;
+    },
+
+    usedPercentage() {
+      if (!this.monthlyLimit) return 0;
+      return Math.min(
+        (this.monthlyExpense / this.monthlyLimit) * 100,
+        100
+      );
+    },
+
+    isLimitExceeded() {
+      return this.monthlyExpense > this.monthlyLimit;
+    },
+
+    progressStatus() {
+      if (this.usedPercentage >= 100) return "danger";
+      if (this.usedPercentage > 75) return "warning";
+      return "success";
+    }
+  },
+
   async mounted() {
     await this.fetchAll();
   },
@@ -97,13 +163,100 @@ export default {
       }
     },
     openAddExpense() {
+      if (this.isLimitExceeded) {
+        alert("Você ultrapassou o limite mensal.");
+        return;
+      }
+
       alert("Abrir modal para criar despesa");
-    },
+    }
   },
 };
 </script>
 
 <style scoped>
+.limit-widget {
+  background: white;
+  border-radius: 16px;
+  padding: 1.5rem;
+  margin-bottom: 2rem;
+  box-shadow: 0 8px 20px rgba(0, 0, 0, 0.05);
+}
+
+.limit-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+}
+
+.limit-header h4 {
+  margin: 0;
+  font-size: 1rem;
+  font-weight: 600;
+}
+
+.limit-header p {
+  margin: 0.3rem 0 0 0;
+  font-size: 0.85rem;
+  color: #6B7280;
+}
+
+.percentage-circle {
+  width: 65px;
+  height: 65px;
+  border-radius: 50%;
+  display: flex;
+  align-items: center;
+  justify-content: center;
+  font-weight: 700;
+  font-size: 1rem;
+  background-color: #E5E7EB;
+  transition: 0.3s;
+}
+
+.progress-bar-modern {
+  margin-top: 1.2rem;
+  height: 12px;
+  background-color: #E5E7EB;
+  border-radius: 8px;
+  overflow: hidden;
+}
+
+.progress-fill-modern {
+  height: 100%;
+  border-radius: 8px;
+  transition: width 0.4s ease;
+}
+
+/* STATUS COLORS */
+
+.success {
+  background-color: #27AE60;
+  color: white;
+}
+
+.warning {
+  background-color: #F39C12;
+  color: white;
+}
+
+.danger {
+  background-color: #E74C3C;
+  color: white;
+}
+
+.progress-fill-modern.success {
+  background: linear-gradient(90deg, #27AE60, #2ECC71);
+}
+
+.progress-fill-modern.warning {
+  background: linear-gradient(90deg, #F39C12, #F1C40F);
+}
+
+.progress-fill-modern.danger {
+  background: linear-gradient(90deg, #E74C3C, #C0392B);
+}
+
 .section-header {
   display: flex;
   justify-content: space-between;
@@ -144,8 +297,9 @@ export default {
   margin: 2rem auto;
   font-family: 'Roboto', sans-serif;
   color: #2C3E50;
-  background-color: #F7F9F9;
+  background-color: #f1f1f1;
   padding: 1rem;
+  border-radius: 2%;
 }
 
 .cards-row {
