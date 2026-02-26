@@ -47,68 +47,76 @@
     </div>
 
     <!-- Seção de contas -->
-    <div class="section-header">
-      <h3>Minhas despesas</h3>
+<div class="expenses-section">
 
-      <div class="filter">
+  <div class="expenses-header">
+    <h3>Minhas despesas</h3>
+
+    <div class="filter-card">
+      <div class="filter-group">
+        <label>Mês</label>
         <input
           type="month"
           v-model="selectedMonth"
           @change="fetchByMonth"
+          class="input-month"
         />
-
-        <button
-          class="btn-secondary"
-          @click="$router.push('/limite')"
-        >
-          Definir Limite
-        </button>
-
-        <button @click="fetchAll" class="btn-primary">
-          Todas
-        </button>
       </div>
-    </div>
 
-    <!-- Lista de despesas -->
-    <div class="expenses-list">
-    <ExpenseCard
-        v-for="expense in expenses"
-        :key="expense.id"
-        :expense="expense"
-    />
-    </div>
+      <button
+        class="btn-outline"
+        @click="$router.push('/limite')"
+      >
+        Definir Limite
+      </button>
 
-    <!-- Botão flutuante -->
-    <FloatingButton 
-      :disabled="isLimitExceeded"
-      @click="openAddExpense" 
-    />
+      <button
+        @click="fetchAll"
+        class="btn-solid"
+      >
+        Todas
+      </button>
+    </div>
+  </div>
+
+      <!-- Lista de despesas -->
+      <div class="expenses-list">
+      <ExpenseCard
+          v-for="expense in expenses"
+          :key="expense.id"
+          :expense="expense"
+      />
+      </div>
+
+      <!-- Botão flutuante -->
+      <FloatingButton 
+        :disabled="isLimitExceeded"
+        @click="openAddExpense" 
+      />
+    </div>
   </div>
 </template>
 
 <script>
 import CardSummary from "../components/CardSummary.vue";
 import FloatingButton from "../components/FloatingButton.vue";
-import expenseService from "../services/expenseServices.js";
 import ExpenseCard from "../components/ExpenseCard.vue";
 
+import expenseService from "../services/expenseServices";
+import monthlyLimitService from "../services/monthlyLimitService";
+import summaryService from "../services/summaryServices";
 
 export default {
   name: "Dashboard",
   components: { CardSummary, FloatingButton, ExpenseCard },
+
   data() {
     return {
       expenses: [],
-      accounts: [
-        { id: 1, name: "Conta Santander", description: "Conta conectada", balance: 1486.45, color: "#E74C3C", initials: "S" },
-        { id: 2, name: "Conta Caixa Econômica", description: "Conta manual", balance: 5468.99, color: "#3498DB", initials: "C" },
-        { id: 3, name: "Conta Inter", description: "Conta manual", balance: 3645.0, color: "#F39C12", initials: "I" },
-        { id: 4, name: "Conta Nubank", description: "Conta conectada", balance: 4345.17, color: "#8E44AD", initials: "N" },
-      ],
-      selectedMonth: null,
+      selectedMonth: new Date().toISOString().slice(0, 7),
       monthlyExpense: 0,
-      monthlyLimit: 15000,
+      monthlyLimit: 0,
+      loading: false
     };
   },
 
@@ -137,31 +145,54 @@ export default {
   },
 
   async mounted() {
-    await this.fetchAll();
+    await this.loadDashboardData();
   },
+
   methods: {
+    async loadDashboardData() {
+      if (!this.selectedMonth) return;
+
+      const [year, month] = this.selectedMonth.split("-");
+      this.loading = true;
+
+      try {
+        const [expensesRes, summaryRes, limitRes] = await Promise.all([
+          expenseService.getByMonth(month, year),
+          summaryService.getMonthlySummary(year, month),
+          monthlyLimitService.get(year, month)
+        ]);
+
+        this.expenses = expensesRes.data || [];
+
+        // Ajuste conforme seu JSON do backend
+        this.monthlyExpense = summaryRes.data?.totalExpenses || 0;
+
+        this.monthlyLimit = limitRes.data?.limitAmount || 0;
+
+      } catch (error) {
+        console.error("Erro ao carregar dashboard:", error);
+        this.monthlyExpense = 0;
+        this.monthlyLimit = 0;
+      } finally {
+        this.loading = false;
+      }
+    },
+
+    async fetchByMonth() {
+      await this.loadDashboardData();
+    },
+
     async fetchAll() {
       try {
         const response = await expenseService.getAll();
         this.expenses = response.data;
+        this.monthlyExpense = 0;
+        this.monthlyLimit = 0;
       } catch (error) {
         console.error("Erro ao buscar despesas:", error);
       }
     },
-    async fetchByMonth() {
-      if (!this.selectedMonth) return;
 
-      const [year, month] = this.selectedMonth.split("-");
-      try {
-        const response = await expenseService.getByMonth(month, year);
-        this.expenses = response.data;
-
-        const totalResp = await expenseService.getMonthlyTotal(month, year);
-        this.monthlyExpense = totalResp.data.total;
-      } catch (error) {
-        console.error("Erro ao filtrar despesas:", error);
-      }
-    },
     openAddExpense() {
       if (this.isLimitExceeded) {
         alert("Você ultrapassou o limite mensal.");
@@ -170,11 +201,95 @@ export default {
 
       alert("Abrir modal para criar despesa");
     }
-  },
+  }
 };
 </script>
 
 <style scoped>
+.btn-solid {
+  background: #27AE60;
+  color: white;
+  border: none;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-solid:hover {
+  background: #1e8449;
+  transform: translateY(-1px);
+}
+
+.btn-outline {
+  background: white;
+  color: #27AE60;
+  border: 1px solid #27AE60;
+  padding: 0.6rem 1rem;
+  border-radius: 8px;
+  font-weight: 500;
+  cursor: pointer;
+  transition: 0.2s;
+}
+
+.btn-outline:hover {
+  background: #E8F8F1;
+  transform: translateY(-1px);
+}
+
+.expenses-section {
+  margin-top: 2rem;
+}
+
+.expenses-header {
+  display: flex;
+  justify-content: space-between;
+  align-items: center;
+  margin-bottom: 1.5rem;
+}
+
+.expenses-header h3 {
+  font-size: 1.3rem;
+  font-weight: 600;
+  margin: 0;
+}
+
+.filter-card {
+  display: flex;
+  align-items: flex-end;
+  gap: 1rem;
+  background: white;
+  padding: 1rem 1.2rem;
+  border-radius: 14px;
+  box-shadow: 0 4px 12px rgba(0,0,0,0.05);
+}
+
+.filter-group {
+  display: flex;
+  flex-direction: column;
+}
+
+.filter-group label {
+  font-size: 0.75rem;
+  color: #6B7280;
+  margin-bottom: 0.3rem;
+}
+
+.input-month {
+  border: 1px solid #E5E7EB;
+  padding: 0.5rem 0.7rem;
+  border-radius: 8px;
+  font-size: 0.9rem;
+  transition: 0.2s;
+}
+
+.input-month:focus {
+  outline: none;
+  border-color: #27AE60;
+  box-shadow: 0 0 0 2px rgba(39, 174, 96, 0.15);
+}
+
 .limit-widget {
   background: white;
   border-radius: 16px;
@@ -289,6 +404,13 @@ export default {
 }
 
 .expenses-list {
+  background: white;
+  padding: 1rem;
+  border-radius: 16px;
+  box-shadow: 0 6px 18px rgba(0,0,0,0.05);
+  display: flex;
+  flex-direction: column;
+  gap: 0.8rem;
   margin-bottom: 3rem;
 }
 
@@ -300,6 +422,7 @@ export default {
   background-color: #f1f1f1;
   padding: 1rem;
   border-radius: 2%;
+  margin-top: 95px;
 }
 
 .cards-row {
