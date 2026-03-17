@@ -46,6 +46,11 @@
 
     </div>
 
+    <CardMonthlyLimit
+      :selectedMonth="selectedMonth"
+      @limit-updated="loadDashboardData"
+    />
+
     <!-- Seção de contas -->
 <div class="expenses-section">
 
@@ -101,14 +106,15 @@
 import CardSummary from "../components/CardSummary.vue";
 import FloatingButton from "../components/FloatingButton.vue";
 import ExpenseCard from "../components/ExpenseCard.vue";
+import CardMonthlyLimit from "../components/CardMonthlyLimit.vue";
 
 import expenseService from "../services/expenseServices";
-import monthlyLimitService from "../services/monthlyLimitService";
+import monthlyLimitService from "@/services/monthlyLimitService";
 import summaryService from "../services/summaryServices";
 
 export default {
   name: "Dashboard",
-  components: { CardSummary, FloatingButton, ExpenseCard },
+  components: { CardSummary, FloatingButton, ExpenseCard, CardMonthlyLimit },
 
   data() {
     return {
